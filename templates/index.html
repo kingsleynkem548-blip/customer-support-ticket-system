@@ -1,48 +1,136 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Support Ticket System</title>
+    <title>Support Dashboard</title>
+    <style>
+        body {
+            font-family: Arial;
+            margin: 20px;
+            background: #f4f6f8;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .card {
+            display: inline-block;
+            padding: 15px;
+            margin: 10px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        input {
+            padding: 8px;
+            margin: 5px;
+        }
+
+        button {
+            padding: 8px 12px;
+            margin: 5px;
+            cursor: pointer;
+        }
+
+        .ticket {
+            background: white;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 6px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Support Ticket System</h1>
 
-    <h2>Create Ticket</h2>
-    <input id="title" placeholder="Title"><br><br>
-    <input id="description" placeholder="Description"><br><br>
-    <button onclick="createTicket()">Create</button>
+<h1>📊 Support Dashboard</h1>
 
-    <h2>Tickets</h2>
-    <ul id="tickets"></ul>
+<div class="card">
+    <h3>Total Tickets</h3>
+    <p id="total">0</p>
+</div>
 
-    <script>
-        async function loadTickets() {
-            let res = await fetch('/tickets');
-            let data = await res.json();
+<div class="card">
+    <h3>Open</h3>
+    <p id="open">0</p>
+</div>
 
-            let list = document.getElementById('tickets');
-            list.innerHTML = '';
+<div class="card">
+    <h3>Closed</h3>
+    <p id="closed">0</p>
+</div>
 
-            data.forEach(t => {
-                let li = document.createElement('li');
-                li.innerText = t.title + " (" + t.status + ")";
-                list.appendChild(li);
-            });
-        }
+<hr>
 
-        async function createTicket() {
-            let title = document.getElementById('title').value;
-            let description = document.getElementById('description').value;
+<h2>Create Ticket</h2>
+<input id="title" placeholder="Title">
+<input id="description" placeholder="Description">
+<button onclick="createTicket()">Create</button>
 
-            await fetch('/tickets', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({title, description})
-            });
+<hr>
 
-            loadTickets();
-        }
+<h2>Filter</h2>
+<button onclick="loadTickets()">All</button>
+<button onclick="filterTickets('Open')">Open</button>
+<button onclick="filterTickets('Closed')">Closed</button>
 
-        loadTickets();
-    </script>
+<h2>Tickets</h2>
+<div id="tickets"></div>
+
+<script>
+let allTickets = [];
+
+async function loadTickets() {
+    let res = await fetch('/tickets');
+    let data = await res.json();
+
+    allTickets = data;
+
+    updateStats(data);
+    displayTickets(data);
+}
+
+function updateStats(data) {
+    document.getElementById('total').innerText = data.length;
+    document.getElementById('open').innerText = data.filter(t => t.status === "Open").length;
+    document.getElementById('closed').innerText = data.filter(t => t.status === "Closed").length;
+}
+
+function displayTickets(data) {
+    let container = document.getElementById('tickets');
+    container.innerHTML = '';
+
+    data.forEach(t => {
+        let div = document.createElement('div');
+        div.className = 'ticket';
+        div.innerHTML = `
+            <b>${t.title}</b> (${t.status})<br>
+            ${t.description}
+        `;
+        container.appendChild(div);
+    });
+}
+
+function filterTickets(status) {
+    let filtered = allTickets.filter(t => t.status === status);
+    displayTickets(filtered);
+}
+
+async function createTicket() {
+    let title = document.getElementById('title').value;
+    let description = document.getElementById('description').value;
+
+    await fetch('/tickets', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({title, description})
+    });
+
+    loadTickets();
+}
+
+loadTickets();
+</script>
+
 </body>
 </html>
