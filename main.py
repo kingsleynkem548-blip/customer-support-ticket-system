@@ -1,4 +1,10 @@
-from ticket_manager import create_ticket, view_tickets, update_ticket_status
+from ticket_manager import (
+    create_ticket,
+    view_tickets,
+    update_ticket_status,
+    search_tickets,
+    delete_ticket
+)
 
 
 def menu():
@@ -7,7 +13,9 @@ def menu():
         print("1. Create new ticket")
         print("2. View all tickets")
         print("3. Update ticket status")
-        print("4. Exit")
+        print("4. Search tickets")
+        print("5. Delete ticket")
+        print("6. Exit")
 
         choice = input("Choose an option: ")
 
@@ -18,6 +26,10 @@ def menu():
         elif choice == "3":
             update_ticket_status()
         elif choice == "4":
+            search_tickets()
+        elif choice == "5":
+            delete_ticket()
+        elif choice == "6":
             print("Goodbye.")
             break
         else:
