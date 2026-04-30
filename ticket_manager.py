@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime
 
 FILE_NAME = "tickets.json"
 
@@ -17,6 +18,10 @@ def save_tickets(tickets):
         json.dump(tickets, file, indent=4)
 
 
+def current_time():
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
 def create_ticket():
     title = input("Enter issue title: ")
     description = input("Enter issue description: ")
@@ -26,15 +31,8 @@ def create_ticket():
     print("2. Medium")
     print("3. Low")
 
-    priority_choice = input("Choose priority: ")
-
-    priority_map = {
-        "1": "High",
-        "2": "Medium",
-        "3": "Low"
-    }
-
-    priority = priority_map.get(priority_choice, "Medium")
+    priority_map = {"1": "High", "2": "Medium", "3": "Low"}
+    priority = priority_map.get(input("Choose priority: "), "Medium")
 
     tickets = load_tickets()
 
@@ -43,13 +41,16 @@ def create_ticket():
         "title": title,
         "description": description,
         "status": "Open",
-        "priority": priority
+        "priority": priority,
+        "created_at": current_time(),
+        "updated_at": current_time(),
+        "messages": []
     }
 
     tickets.append(ticket)
     save_tickets(tickets)
 
-    print("✅ Ticket created successfully.")
+    print("✅ Ticket created.")
 
 
 def view_tickets():
@@ -59,52 +60,98 @@ def view_tickets():
         print("No tickets found.")
         return
 
-    for ticket in tickets:
-        print(f"\nID: {ticket['id']}")
-        print(f"Title: {ticket['title']}")
-        print(f"Description: {ticket['description']}")
-        print(f"Status: {ticket['status']}")
-        print(f"Priority: {ticket['priority']}")
+    # Sort by priority
+    priority_order = {"High": 1, "Medium": 2, "Low": 3}
+    tickets.sort(key=lambda t: priority_order.get(t["priority"], 3))
+
+    for t in tickets:
+        print(f"\nID: {t['id']} | {t['priority']} | {t['status']}")
+        print(f"Title: {t['title']}")
+        print(f"Created: {t['created_at']}")
 
 
 def update_ticket_status():
     tickets = load_tickets()
 
-    if not tickets:
-        print("No tickets to update.")
-        return
-
     try:
-        ticket_id = int(input("Enter ticket ID to update: "))
+        ticket_id = int(input("Enter ticket ID: "))
     except ValueError:
         print("Invalid ID.")
         return
 
-    for ticket in tickets:
-        if ticket["id"] == ticket_id:
-            print("1. Open")
-            print("2. In Progress")
-            print("3. Closed")
-
-            choice = input("Select new status: ")
-
+    for t in tickets:
+        if t["id"] == ticket_id:
+            print("1. Open | 2. In Progress | 3. Closed")
             status_map = {
                 "1": "Open",
                 "2": "In Progress",
                 "3": "Closed"
             }
 
-            ticket["status"] = status_map.get(choice, ticket["status"])
+            choice = input("Select new status: ")
+            t["status"] = status_map.get(choice, t["status"])
+            t["updated_at"] = current_time()
 
             save_tickets(tickets)
-            print("✅ Ticket updated.")
+            print("✅ Status updated.")
+            return
+
+    print("Ticket not found.")
+
+
+def add_response():
+    tickets = load_tickets()
+
+    try:
+        ticket_id = int(input("Enter ticket ID: "))
+    except ValueError:
+        print("Invalid ID.")
+        return
+
+    for t in tickets:
+        if t["id"] == ticket_id:
+            message = input("Enter response: ")
+
+            t["messages"].append({
+                "time": current_time(),
+                "message": message
+            })
+
+            t["updated_at"] = current_time()
+            save_tickets(tickets)
+
+            print("💬 Response added.")
+            return
+
+    print("Ticket not found.")
+
+
+def view_conversation():
+    tickets = load_tickets()
+
+    try:
+        ticket_id = int(input("Enter ticket ID: "))
+    except ValueError:
+        print("Invalid ID.")
+        return
+
+    for t in tickets:
+        if t["id"] == ticket_id:
+            print(f"\n=== Conversation for Ticket {ticket_id} ===")
+
+            if not t["messages"]:
+                print("No messages yet.")
+                return
+
+            for msg in t["messages"]:
+                print(f"[{msg['time']}] {msg['message']}")
             return
 
     print("Ticket not found.")
 
 
 def search_tickets():
-    keyword = input("Enter keyword to search: ").lower()
+    keyword = input("Search keyword: ").lower()
     tickets = load_tickets()
 
     results = [
@@ -113,14 +160,12 @@ def search_tickets():
     ]
 
     if not results:
-        print("No matching tickets found.")
+        print("No results.")
         return
 
-    for ticket in results:
-        print(f"\nID: {ticket['id']}")
-        print(f"Title: {ticket['title']}")
-        print(f"Status: {ticket['status']}")
-        print(f"Priority: {ticket['priority']}")
+    for t in results:
+        print(f"\nID: {t['id']} | {t['status']} | {t['priority']}")
+        print(f"Title: {t['title']}")
 
 
 def delete_ticket():
@@ -139,4 +184,4 @@ def delete_ticket():
         return
 
     save_tickets(updated)
-    print("🗑️ Ticket deleted.")
+    print("🗑️ Deleted.")
