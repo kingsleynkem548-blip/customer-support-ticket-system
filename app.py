@@ -4,9 +4,11 @@ from ticket_manager import load_tickets, save_tickets, current_time
 app = Flask(__name__)
 
 
+from flask import render_template
+
 @app.route("/")
 def home():
-    return "Customer Support System is running"
+    return render_template("index.html")
 
 
 @app.route("/tickets", methods=["GET"])
