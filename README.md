@@ -1,5 +1,10 @@
 # Customer Support Ticket System
 
+## 🌐 Live Demo
+
+👉 https://customer-support-ticket-system-tc56.onrender.com
+
+
 A simple Python-based command-line application that simulates a real-world customer support workflow, allowing users to create, track, and manage support tickets.
 
 ---
@@ -69,6 +74,14 @@ python main.py
 ```
 
 ---
+## 💡 What This Project Demonstrates
+
+* Real-world customer support workflow simulation
+* Backend API development using Flask
+* Frontend integration with JavaScript
+* Persistent data handling using JSON
+* Deployment to a live cloud environment
+
 
 ## 📌 Author
 
