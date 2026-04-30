@@ -10,7 +10,7 @@ A simple Python-based command-line application that simulates a real-world custo
 * View all existing tickets
 * Update ticket status (Open, In Progress, Closed)
 * Persistent storage using JSON
-* Simple CLI interface for interaction
+* Simple CLI interface for interaction 
 
 ---
 
