@@ -3,21 +3,25 @@ from ticket_manager import (
     view_tickets,
     update_ticket_status,
     search_tickets,
-    delete_ticket
+    delete_ticket,
+    add_response,
+    view_conversation
 )
 
 
 def menu():
     while True:
-        print("\n=== Customer Support Ticket System ===")
-        print("1. Create new ticket")
-        print("2. View all tickets")
-        print("3. Update ticket status")
-        print("4. Search tickets")
-        print("5. Delete ticket")
-        print("6. Exit")
+        print("\n=== Customer Support System ===")
+        print("1. Create Ticket")
+        print("2. View Tickets")
+        print("3. Update Status")
+        print("4. Search Tickets")
+        print("5. Delete Ticket")
+        print("6. Add Response")
+        print("7. View Conversation")
+        print("8. Exit")
 
-        choice = input("Choose an option: ")
+        choice = input("Choose: ")
 
         if choice == "1":
             create_ticket()
@@ -30,10 +34,13 @@ def menu():
         elif choice == "5":
             delete_ticket()
         elif choice == "6":
-            print("Goodbye.")
+            add_response()
+        elif choice == "7":
+            view_conversation()
+        elif choice == "8":
             break
         else:
-            print("Invalid option. Try again.")
+            print("Invalid option")
 
 
 if __name__ == "__main__":
