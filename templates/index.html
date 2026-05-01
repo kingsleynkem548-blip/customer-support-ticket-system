@@ -2,63 +2,15 @@
 <html>
 <head>
     <title>Support Dashboard</title>
-    <style>
-        body {
-            font-family: Arial;
-            margin: 20px;
-            background: #f4f6f8;
-        }
-
-        h1 {
-            color: #333;
-        }
-
-        .card {
-            display: inline-block;
-            padding: 15px;
-            margin: 10px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        input {
-            padding: 8px;
-            margin: 5px;
-        }
-
-        button {
-            padding: 8px 12px;
-            margin: 5px;
-            cursor: pointer;
-        }
-
-        .ticket {
-            background: white;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 6px;
-        }
-    </style>
 </head>
 <body>
 
 <h1>📊 Support Dashboard</h1>
 
-<div class="card">
-    <h3>Total Tickets</h3>
-    <p id="total">0</p>
-</div>
-
-<div class="card">
-    <h3>Open</h3>
-    <p id="open">0</p>
-</div>
-
-<div class="card">
-    <h3>Closed</h3>
-    <p id="closed">0</p>
-</div>
+<h2>Stats</h2>
+<p>Total: <span id="total">0</span></p>
+<p>Open: <span id="open">0</span></p>
+<p>Closed: <span id="closed">0</span></p>
 
 <hr>
 
@@ -74,6 +26,8 @@
 <button onclick="filterTickets('Open')">Open</button>
 <button onclick="filterTickets('Closed')">Closed</button>
 
+<hr>
+
 <h2>Tickets</h2>
 <div id="tickets"></div>
 
@@ -83,17 +37,13 @@ let allTickets = [];
 async function loadTickets() {
     let res = await fetch('/tickets');
     let data = await res.json();
-
     allTickets = data;
 
-    updateStats(data);
-    displayTickets(data);
-}
-
-function updateStats(data) {
     document.getElementById('total').innerText = data.length;
     document.getElementById('open').innerText = data.filter(t => t.status === "Open").length;
     document.getElementById('closed').innerText = data.filter(t => t.status === "Closed").length;
+
+    displayTickets(data);
 }
 
 function displayTickets(data) {
@@ -102,11 +52,7 @@ function displayTickets(data) {
 
     data.forEach(t => {
         let div = document.createElement('div');
-        div.className = 'ticket';
-        div.innerHTML = `
-            <b>${t.title}</b> (${t.status})<br>
-            ${t.description}
-        `;
+        div.innerHTML = `<b>${t.title}</b> (${t.status}) - ${t.description}`;
         container.appendChild(div);
     });
 }
