@@ -2,16 +2,21 @@
 let allTickets = [];
 
 async function loadTickets() {
-    let res = await fetch('/tickets');
-    let data = await res.json();
+    try {
+        let res = await fetch('/tickets');
+        let data = await res.json();
 
-    allTickets = data;
+        allTickets = data;
 
-    document.getElementById('total').innerText = data.length;
-    document.getElementById('open').innerText = data.filter(t => t.status === "Open").length;
-    document.getElementById('closed').innerText = data.filter(t => t.status === "Closed").length;
+        // Update stats
+        document.getElementById('total').innerText = data.length;
+        document.getElementById('open').innerText = data.filter(t => t.status === "Open").length;
+        document.getElementById('closed').innerText = data.filter(t => t.status === "Closed").length;
 
-    displayTickets(data);
+        displayTickets(data);
+    } catch (error) {
+        console.error("Error loading tickets:", error);
+    }
 }
 
 function displayTickets(data) {
@@ -21,17 +26,21 @@ function displayTickets(data) {
     data.forEach(t => {
         let div = document.createElement('div');
 
-        div.innerHTML = `
-            <b>${t.title}</b> (${t.status})<br>
-            ${t.description}<br>
-            <button onclick="closeTicket(${t.id})">Close</button>
-        `;
+        div.innerHTML =
+            "<b>" + (t.title || "No Title") + "</b> (" + (t.status || "Open") + ")<br>" +
+            (t.description || "") + "<br>" +
+            "<button onclick='closeTicket(" + t.id + ")'>Close</button>";
 
         container.appendChild(div);
     });
 }
 
 function filterTickets(status) {
+    if (!status) {
+        displayTickets(allTickets);
+        return;
+    }
+
     let filtered = allTickets.filter(t => t.status === status);
     displayTickets(filtered);
 }
@@ -40,22 +49,40 @@ async function createTicket() {
     let title = document.getElementById('title').value;
     let description = document.getElementById('description').value;
 
-    await fetch('/tickets', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({title, description})
-    });
+    if (!title || !description) {
+        alert("Please fill in all fields");
+        return;
+    }
 
-    loadTickets();
+    try {
+        await fetch('/tickets', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ title: title, description: description })
+        });
+
+        // Clear inputs
+        document.getElementById('title').value = '';
+        document.getElementById('description').value = '';
+
+        loadTickets();
+    } catch (error) {
+        console.error("Error creating ticket:", error);
+    }
 }
 
 async function closeTicket(id) {
-    await fetch(`/tickets/${id}/close`, {
-        method: 'POST'
-    });
+    try {
+        await fetch('/tickets/' + id + '/close', {
+            method: 'POST'
+        });
 
-    loadTickets();
+        loadTickets();
+    } catch (error) {
+        console.error("Error closing ticket:", error);
+    }
 }
 
+// Initial load
 loadTickets();
 </script>
