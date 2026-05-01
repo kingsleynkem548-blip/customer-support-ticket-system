@@ -1,10 +1,36 @@
-from flask import Flask, request, jsonify
-from ticket_manager import load_tickets, save_tickets, current_time
+from flask import Flask, request, jsonify, render_template
+import json
+import os
+from datetime import datetime
 
 app = Flask(__name__)
 
+DATA_FILE = "tickets.json"
 
-from flask import render_template
+
+# ------------------ HELPERS ------------------
+
+def current_time():
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+def load_tickets():
+    if not os.path.exists(DATA_FILE):
+        return []
+
+    with open(DATA_FILE, "r") as f:
+        try:
+            return json.load(f)
+        except:
+            return []
+
+
+def save_tickets(tickets):
+    with open(DATA_FILE, "w") as f:
+        json.dump(tickets, f, indent=4)
+
+
+# ------------------ ROUTES ------------------
 
 @app.route("/")
 def home():
@@ -13,47 +39,30 @@ def home():
 
 @app.route("/tickets", methods=["GET"])
 def get_tickets():
-    return jsonify(load_tickets())
+    tickets = load_tickets()
+    return jsonify(tickets)
 
 
 @app.route("/tickets", methods=["POST"])
 def create_ticket():
-    data = request.json
     tickets = load_tickets()
 
-    ticket = {
+    data = request.get_json()
+
+    new_ticket = {
         "id": len(tickets) + 1,
         "title": data.get("title"),
         "description": data.get("description"),
         "status": "Open",
-        "priority": data.get("priority", "Medium"),
-        "created_at": current_time(),
-        "updated_at": current_time(),
-        "messages": []
+        "created_at": current_time()
     }
 
-    tickets.append(ticket)
+    tickets.append(new_ticket)
     save_tickets(tickets)
 
-    return jsonify({"message": "Ticket created", "ticket": ticket})
+    return jsonify(new_ticket)
 
 
-@app.route("/tickets/<int:ticket_id>/response", methods=["POST"])
-def add_response(ticket_id):
-    data = request.json
-    tickets = load_tickets()
-
-    for t in tickets:
-        if t["id"] == ticket_id:
-            t["messages"].append({
-                "time": current_time(),
-                "message": data.get("message")
-            })
-            t["updated_at"] = current_time()
-            save_tickets(tickets)
-            return jsonify({"message": "Response added"})
-
-    return jsonify({"error": "Ticket not found"}), 404
 @app.route("/tickets/<int:ticket_id>/close", methods=["POST"])
 def close_ticket(ticket_id):
     tickets = load_tickets()
@@ -67,10 +76,8 @@ def close_ticket(ticket_id):
 
     return jsonify({"error": "Ticket not found"}), 404
 
-if __name__ == "__main__":
-    import os
 
-app.run(
-    host="0.0.0.0",
-    port=int(os.environ.get("PORT", 5000))
-)
+# ------------------ RUN ------------------
+
+if __name__ == "__main__":
+    app.run(debug=True)
