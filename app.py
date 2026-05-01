@@ -54,7 +54,18 @@ def add_response(ticket_id):
             return jsonify({"message": "Response added"})
 
     return jsonify({"error": "Ticket not found"}), 404
+@app.route("/tickets/<int:ticket_id>/close", methods=["POST"])
+def close_ticket(ticket_id):
+    tickets = load_tickets()
 
+    for ticket in tickets:
+        if ticket["id"] == ticket_id:
+            ticket["status"] = "Closed"
+            ticket["updated_at"] = current_time()
+            save_tickets(tickets)
+            return jsonify({"message": "Ticket closed", "ticket": ticket})
+
+    return jsonify({"error": "Ticket not found"}), 404
 
 if __name__ == "__main__":
     import os
